@@ -91,6 +91,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
         int TentativaManufatura = 0; // indica as tentativas para negociar manufatura
         private MessageTemplate _messageTemplate; // Template que recebe os agentes com suas propostas
         String ServicoPeca = _servicesNeeded.get(0);
+        int _locationVencedor;
         
         @Override
         public void action() {
@@ -200,12 +201,17 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                     myAgent.send(PerdedoresManufatura);
                     passo = 6;
                     break;
-                case 6: //Envia um REQUEST ao agente vencedor                    
+                case 6: //Envia um REQUEST ao agente vencedor
+                    mensagem = myAgent.receive();
+                    if(mensagem.getSender() == AgenteVencedorManufatura){
+                        _locationVencedor = Integer.parseInt(mensagem.getContent());                        
+                    }
                     ACLMessage msgReqManufatura = new ACLMessage(ACLMessage.REQUEST);// configura uma mensagem de REQUEST
                     msgReqManufatura.addReceiver(AgenteVencedorManufatura);// configura o destinatário
                     msgReqManufatura.setContent(ServicoPeca);//indica o serviço a ser executado
                     myAgent.send(msgReqManufatura);//envio da mensagem de REQUEST 
                     myForm.atualizarTexto("Serviço para  " + AgenteVencedorManufatura.getLocalName());
+                    
                     passo = 7;
                     break;
                 case 7: //Receber o sinal de final de processo INFORM(Estado) da máquina ou um FAILURE

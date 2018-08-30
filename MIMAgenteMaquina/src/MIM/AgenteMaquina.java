@@ -21,6 +21,8 @@ import javax.swing.JOptionPane;
 public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
     InterfaceAgenteForm myInterface;
     FormAgenteMaquina myForm = new FormAgenteMaquina(this);
+    
+    int _location = 12;
   
     ArrayList<String> _machineServicesArray = new ArrayList<String>()
             {
@@ -169,6 +171,10 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
                 if (mensagem.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {//proposta foi aceita                    
                     myForm.atualizarTexto("Proposta foi Aceita");
                     setEstadoMaquina(false);//para manter a máquina ocupada 
+                    ACLMessage location = mensagem.createReply();
+                    location.setContent("Localização: "+_location);
+                    location.setConversationId("Local");
+                    myAgent.send(mensagem);
                 }
                 if (mensagem.getPerformative() == ACLMessage.REQUEST) {
                     String informacao = mensagem.getContent();
@@ -186,18 +192,8 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
                 myForm.atualizarTexto("Terminou a atividade");
                 Termino.setPerformative(ACLMessage.INFORM);
                 Termino.setContent(getRespostaMaquina());//agrega a resposta da máquina
-                myAgent.send(Termino); 
-                long tempo1 = new Date().getTime();
-                int contador = 0;
-                while (contador < 3) {
-                    long tempo2 = new Date().getTime();
-                    if (tempo2 > tempo1+1000) {
-                        tempo1 = tempo2;
-                        contador++;
-                        myForm.atualizarTexto("Encerrando..."+contador);
-                    }   
-                }
-                myForm.limparTexto();//limpar a caixa de mensagens
+                myAgent.send(Termino);
+                //myForm.limparTexto();//limpar a caixa de mensagens
                 myForm.atualizarTexto("Máquina Disponível...");
                 setEstadoMaquina(true);//maquina liberada = true; máquina ocupada = false;
             }
