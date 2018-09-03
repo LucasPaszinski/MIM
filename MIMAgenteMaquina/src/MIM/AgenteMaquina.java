@@ -51,6 +51,7 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
         ModbusConfigurationSetup();
         myForm.SetServiceArray(this._machineServicesArray);
         myForm.RealoadServiçes();
+
     }
     protected void takeDown() {
         System.out.println("Agente "+ getLocalName()+" Encerrado");      
@@ -141,7 +142,7 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
         public NegociadorMaquina(){ //construtor da classe  
         }
         @Override
-        public void action(){          
+        public void action(){  
             ACLMessage mensagem = myAgent.receive();//lê a mensage            
             if (mensagem != null) {                                                             
                 if (mensagem.getPerformative() == ACLMessage.CFP) {                
@@ -171,9 +172,9 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
                 if (mensagem.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {//proposta foi aceita                    
                     myForm.atualizarTexto("Proposta foi Aceita");
                     setEstadoMaquina(false);//para manter a máquina ocupada 
-                    ACLMessage location = mensagem.createReply();
+                    ACLMessage location = new ACLMessage();
                     location.setContent("Localização: "+_location);
-                    location.setConversationId("Local");
+                    location.setConversationId("Local Maquina");
                     myAgent.send(mensagem);
                 }
                 if (mensagem.getPerformative() == ACLMessage.REQUEST) {
@@ -186,8 +187,11 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
                     Thread Maquina = new ExecutaMaquina(informacao);// executa a thread que fara a tarefa propriamente                    
                     Maquina.start();//executa a thread
                 }
+                else{
+                    myAgent.putBack(mensagem);
+                }
             }
-            if(getFimExecucaoMaquina()){
+            else if(getFimExecucaoMaquina()){
                 setFimExecucaoMaquina(false); //para resetar a flag de FimExecucaoMaquina               
                 myForm.atualizarTexto("Terminou a atividade");
                 Termino.setPerformative(ACLMessage.INFORM);
@@ -197,7 +201,7 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
                 myForm.atualizarTexto("Máquina Disponível...");
                 setEstadoMaquina(true);//maquina liberada = true; máquina ocupada = false;
             }
-            block(500);//bloqueia a varredura por 500ms ou quando chegar uma nova mensagem
+            //block(500);//bloqueia a varredura por 500ms ou quando chegar uma nova mensagem
         }        
         @Override
         public boolean done() {
@@ -224,7 +228,7 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
             return _modbus.InformCLP();
         }
         @Override
-        public void run() {            
+        public void run() { 
             int passo = 1; //contador de passos
             int _inform = 0;
             _modbus.RunCLP(0);

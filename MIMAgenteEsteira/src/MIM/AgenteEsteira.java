@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package MIM;
 
 import jade.core.AID;
@@ -15,23 +10,54 @@ import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import java.util.ArrayList;
 import java.util.Date;
-//import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
 import javax.swing.JOptionPane;
 
-/**
- *
- * @author Lucas
- */
 public class AgenteEsteira extends Agent {
     
     ArrayList<AID> _agentesMaquina = new ArrayList<>();
     ArrayList<String> _localAgentesMaquina = new ArrayList<>();
     ArrayList<AID> _agentesPeça = new ArrayList<>();
     ArrayList<String> _localAgentesPeça = new ArrayList<>();
-    
     Boolean _esteiraLigada = false;
+    
+    ArrayList<String> _esteiraServicesArray = new ArrayList<String>()
+            {
+                {
+                add("Local Maquina");
+                add("Local Peça");
+
+                }
+                
+            };   
+    private Boolean _isLocalPosted = false;
+        
+    public void SetIsLocalPosted(Boolean state){
+        _isLocalPosted = state;
+    }
+    
+    public Boolean GetIsLocalPosted(){
+            return _isLocalPosted;
+        }
+     public void postarServico(ArrayList<String> habilidades){
+        if(!this.GetIsLocalPosted()){//verifica se o serviço já foi postado
+            DFAgentDescription dfd = new DFAgentDescription();
+            dfd.setName(this.getAID());
+            for(String habilidade : habilidades) {
+                ServiceDescription sd = new ServiceDescription();
+                sd.setType("manufatura");
+                sd.setName(habilidade);
+                sd.setOwnership(getLocalName());
+                dfd.addServices(sd);                
+            }
+            try { DFService.register(this, dfd); }
+            catch (FIPAException fe) { fe.printStackTrace(); } 
+            this.SetIsLocalPosted(true);//para indicar que um serviço foi postado
+        }else{
+            JOptionPane.showMessageDialog(null, "Serviço já postado", "Máquina" + getAID().getLocalName(), JOptionPane.INFORMATION_MESSAGE);                              
+        }
+    }
     
     public int GetLocationPeça(AID agente)
     {
@@ -95,13 +121,10 @@ public class AgenteEsteira extends Agent {
             }
             }    
         }
-
+       
         @Override
         public boolean done() {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-    
-}
-//
-    
+    }
 }

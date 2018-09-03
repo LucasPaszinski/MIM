@@ -22,15 +22,15 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
 
     InterfaceAgenteForm myInterface;
     FormAgentePeca myForm = new FormAgentePeca(this);
+    int _local = 0;
     ArrayList<String> _servicesNeeded = new ArrayList<String>() {
         {
-            add("Storage4GB");
-            add("quadrado");
-            add("Rosa");
-            add("Storage8GB");
-            add("ArnoldC");
-            add("Magenta");
-            add("Custom");
+                add("Storage4GB");
+                add("Storage8GB");
+                add("Storage16GB");
+                add("Storage32GB");
+                add("Storage64GB");
+                add("Storage128GB");
         }
 
     };
@@ -55,9 +55,16 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
 
     public void iniciarProducao() {
         myForm.limparTexto();//para limpar o quadro de texto
+        solicitadorServicos solicitador = new solicitadorServicos();
         addBehaviour(new solicitadorServicos());//executa o comportamento que realizará as negociações
-    }
+        SetLocation(_local, solicitador);
 
+    }
+    
+    public void SetLocation(int local, solicitadorServicos solicitador){
+        ArrayList<AID> AgentesEsteiras = buscarAgentes(this, "Local", "Local Peça");
+        solicitador.SendCFP(AgentesEsteiras, "Local Peça", "Local", Integer.toString(local));
+    } 
     public ArrayList<AID> buscarAgentes(Agent agentePedindo, String nomeServico, String tipoServico) {
         ArrayList<AID> aids = new ArrayList<>();
         DFAgentDescription agentDescription = new DFAgentDescription();
@@ -93,6 +100,34 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
         String ServicoPeca = _servicesNeeded.get(0);
         int _locationVencedor;
         
+        private void SendLocation(int location){
+            
+        }
+        
+        public int SendCFP(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content ){
+            if (!AgentsThatDo.isEmpty()) {
+                ACLMessage cfpManufatura = new ACLMessage(ACLMessage.CFP);
+                for (AID AgenteFazManufatura : AgentsThatDo) {
+                    myForm.atualizarTexto("Agente " + AgenteFazManufatura.getLocalName() + " faz");
+                    cfpManufatura.addReceiver(AgenteFazManufatura);// carrega o Agentes que receberão o CFP
+                }
+                cfpManufatura.setContent(serviço + " " + Content);//colocar a tarefa e o critério (preco / distancia)
+                cfpManufatura.setConversationId(ConversationID);//carrega o tipo de manufatura
+                cfpManufatura.setReplyWith("cfp");//habilida o recebimento de propostas
+                cfpManufatura.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);//carrega o protocolo ContractNet
+                myAgent.send(cfpManufatura);// envia os CFP aos agentes
+                        // Prepara para receber a resposta do participante [PROPOSE ou REFUSE]
+                myForm.atualizarTexto("Enviando CFP...");
+                return 3;       
+            } 
+            else {
+                TentativaManufatura++; //incrementa a tentativa de busca para agente de manufatura
+                myForm.atualizarTexto("Tentativa " + TentativaManufatura);
+                //quando for implemena a troca de serviços deve ser colocado aqui
+                return 2;
+            }
+        }
+        
         @Override
         public void action() {
             ACLMessage mensagem = null;//lê a mensagem de retorno
@@ -106,31 +141,9 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                 case 2: //busca no DF os agentes que podem fazer a tarefa
                     myForm.atualizarTexto("Buscando Agentes que Fazem...");
                     AgentesFazManufatura = buscarAgentes(myAgent, ServicoPeca, "Manufatura");//faz uma nova busca por novo agente
-                    if (!AgentesFazManufatura.isEmpty()) {
-                        for (AID agent : AgentesFazManufatura) {
-                            myForm.atualizarTexto("Agente " + agent.getLocalName() + " faz");
-                        }
-                        passo = 3;
-                    } else {
-                        TentativaManufatura++; //incrementa a tentativa de busca para agente de manufatura
-                        myForm.atualizarTexto("Tentativa " + TentativaManufatura);
-                        //quando for implemena a troca de serviços deve ser colocado aqui
-                        passo = 2;
-                    }
+                    passo = SendCFP(AgentesFazManufatura, ServicoPeca,"Manufatura","preço");
                     break;
                 case 3: // envia o CFP aos agentes máquina que podem fazer o serviço
-                    ACLMessage cfpManufatura = new ACLMessage(ACLMessage.CFP);
-                    for (AID AgenteFazManufatura : AgentesFazManufatura) {
-                        cfpManufatura.addReceiver(AgenteFazManufatura);// carrega o Agentes que receberão o CFP
-                    }
-                    cfpManufatura.setContent(ServicoPeca + " " + "preco");//colocar a tarefa e o critério (preco / distancia)
-                    cfpManufatura.setConversationId("Manufatura");//carrega o tipo de manufatura
-                    cfpManufatura.setReplyWith("cfp");//habilida o recebimento de propostas
-                    cfpManufatura.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);//carrega o protocolo ContractNet
-                    myAgent.send(cfpManufatura);// envia os CFP aos agentes
-                    // Prepara para receber a resposta do participante [PROPOSE ou REFUSE]
-                    myForm.atualizarTexto("Enviando CFP...");
-                    //zerar os agentes para monitorar novas propostas
                     AgentesPropoeManufatura = new ArrayList<>();
                     AgentesPropoeManufaturaValor = new ArrayList<>();
                     AgenteVencedorManufatura = null;//para zerar o agente;
@@ -203,9 +216,9 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                     break;
                 case 6: //Envia um REQUEST ao agente vencedor
                     mensagem = myAgent.receive();
-                    if(mensagem.getSender() == AgenteVencedorManufatura){
-                        _locationVencedor = Integer.parseInt(mensagem.getContent());                        
-                    }
+//                    if(mensagem.getSender() == AgenteVencedorManufatura){
+ //                       _locationVencedor = Integer.parseInt(mensagem.getContent());                        
+ //                   }
                     ACLMessage msgReqManufatura = new ACLMessage(ACLMessage.REQUEST);// configura uma mensagem de REQUEST
                     msgReqManufatura.addReceiver(AgenteVencedorManufatura);// configura o destinatário
                     msgReqManufatura.setContent(ServicoPeca);//indica o serviço a ser executado
@@ -241,11 +254,30 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                 iniciarProducao();
             }
         }//fim do Action
+        
+        public void ReloadLocal(){
+            ReloadLocal reload = new ReloadLocal();
+            reload.start();
+        }
+        private class ReloadLocal extends Thread{
+            public void run(){
+                while(!_servicesNeeded.isEmpty()){
 
+                    ACLMessage msg  = myAgent.receive();
+                    if(msg.getConversationId() != "Local"){
+                        _local = Integer.parseInt(msg.getContent());                   
+
+                    }
+                    else{
+                    myAgent.putBack(msg);
+                    }
+                }
+            }   
+    }
         @Override
         public boolean done() {
             return PecaPronta; //com fim da peça em true encerra o comportamento
         }//fim do done
-    }//fim do comportamento
+    }//fim do comportamento 
 }//final da classe AgentePeca
 
