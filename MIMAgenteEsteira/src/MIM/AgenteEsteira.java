@@ -46,7 +46,7 @@ public class AgenteEsteira extends Agent {
             dfd.setName(this.getAID());
             for(String habilidade : habilidades) {
                 ServiceDescription sd = new ServiceDescription();
-                sd.setType("manufatura");
+                sd.setType("Local");
                 sd.setName(habilidade);
                 sd.setOwnership(getLocalName());
                 dfd.addServices(sd);                
@@ -67,6 +67,7 @@ public class AgenteEsteira extends Agent {
     protected void setup() {
         System.out.println("Oi, sou agente " + getLocalName());
         _esteiraLigada = true;
+        postarServico(_esteiraServicesArray);
         iniciarProducao();
         
     }
@@ -80,7 +81,9 @@ public class AgenteEsteira extends Agent {
     }
 
     public class Esteira extends Behaviour {
+        public Esteira(){
         
+        }
         long TempoCiclo = new Date().getTime();
         
         int _posiçãoEsteira;
@@ -90,13 +93,14 @@ public class AgenteEsteira extends Agent {
                 
             ACLMessage mensagem = myAgent.receive();
             if(mensagem != null){
-                if(mensagem.getConversationId().equalsIgnoreCase("Local Maquina")){
+                int oi = 1;
+                if(mensagem.getConversationId().equalsIgnoreCase("Local")){
                     if(!_agentesMaquina.contains(mensagem.getSender())){
                         _agentesMaquina.add(mensagem.getSender());
                         _localAgentesMaquina.add(String.format("{}",Integer.parseInt(mensagem.getContent())));
                     }
                 }
-                else if(mensagem.getConversationId().equalsIgnoreCase("Local Peça")){
+                else if(mensagem.getConversationId().equalsIgnoreCase("Local")){
                     if(!_agentesPeça.contains(mensagem.getSender())){
                         _agentesPeça.add(mensagem.getSender());
                         _localAgentesPeça.add(String.format("{}",Integer.parseInt(mensagem.getContent())));

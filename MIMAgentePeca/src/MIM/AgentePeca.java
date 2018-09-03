@@ -62,7 +62,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
     }
     
     public void SetLocation(int local, solicitadorServicos solicitador){
-        ArrayList<AID> AgentesEsteiras = buscarAgentes(this, "Local", "Local Peça");
+        ArrayList<AID> AgentesEsteiras = buscarAgentes(this, "Local Peça", "Local");
         solicitador.SendCFP(AgentesEsteiras, "Local Peça", "Local", Integer.toString(local));
     } 
     public ArrayList<AID> buscarAgentes(Agent agentePedindo, String nomeServico, String tipoServico) {
@@ -83,6 +83,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
             System.out.println("Erro de busca");
         }
         return aids;
+        
     }
     
     public class solicitadorServicos extends Behaviour {
@@ -106,6 +107,9 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
         
         public int SendCFP(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content ){
             if (!AgentsThatDo.isEmpty()) {
+                while(true){
+                
+                }
                 ACLMessage cfpManufatura = new ACLMessage(ACLMessage.CFP);
                 for (AID AgenteFazManufatura : AgentsThatDo) {
                     myForm.atualizarTexto("Agente " + AgenteFazManufatura.getLocalName() + " faz");
@@ -113,7 +117,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                 }
                 cfpManufatura.setContent(serviço + " " + Content);//colocar a tarefa e o critério (preco / distancia)
                 cfpManufatura.setConversationId(ConversationID);//carrega o tipo de manufatura
-                cfpManufatura.setReplyWith("cfp");//habilida o recebimento de propostas
+                cfpManufatura.setReplyWith("Local");//habilida o recebimento de propostas
                 cfpManufatura.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);//carrega o protocolo ContractNet
                 myAgent.send(cfpManufatura);// envia os CFP aos agentes
                         // Prepara para receber a resposta do participante [PROPOSE ou REFUSE]
