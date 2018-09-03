@@ -33,11 +33,21 @@ public class AgenteEsteira extends Agent {
     
     Boolean _esteiraLigada = false;
     
+    public int GetLocationPeça(AID agente)
+    {
+        return Integer.parseInt(_localAgentesPeça.get(_agentesPeça.indexOf(agente)));
+    }
+    
     protected void setup() {
         System.out.println("Oi, sou agente " + getLocalName());
         _esteiraLigada = true;
+        iniciarProducao();
+        
     }
-
+    
+    public void iniciarProducao() {
+        addBehaviour(new Esteira());//executa o comportamento que realizará as negociações
+    }
     protected void takeDown() {
         System.out.println("Agente " + getLocalName() + " Encerrado");
         System.exit(0);//comando para fechar o programa
@@ -50,6 +60,8 @@ public class AgenteEsteira extends Agent {
         int _posiçãoEsteira;
         @Override
         public void action() {
+            while(true){
+                
             ACLMessage mensagem = myAgent.receive();
             if(mensagem != null){
                 if(mensagem.getConversationId().equalsIgnoreCase("Local Maquina")){
@@ -58,21 +70,30 @@ public class AgenteEsteira extends Agent {
                         _localAgentesMaquina.add(String.format("{}",Integer.parseInt(mensagem.getContent())));
                     }
                 }
-                if(mensagem.getConversationId().equalsIgnoreCase("Local Peça")){
+                else if(mensagem.getConversationId().equalsIgnoreCase("Local Peça")){
                     if(!_agentesPeça.contains(mensagem.getSender())){
                         _agentesPeça.add(mensagem.getSender());
                         _localAgentesPeça.add(String.format("{}",Integer.parseInt(mensagem.getContent())));
                     }
                 }
+                else{
+                    myAgent.putBack(mensagem);
+                }
+                
             }
             if(new Date().getTime() - TempoCiclo > 2000){
                 TempoCiclo = new Date().getTime();
                 for (int i = 0; i < _agentesPeça.size(); i++) {
                     String value  = String.format("{0}",Integer.parseInt(_localAgentesPeça.get(i))+1);
                     _localAgentesPeça.add(i, value);
+                    ACLMessage sender = new ACLMessage(ACLMessage.INFORM);
+                    sender.addReceiver(_agentesPeça.get(i));
+                    sender.setContent(_localAgentesPeça.get(i));
+                    sender.setConversationId("Local");
+                    myAgent.send(sender);
                 }   
             }
-            
+            }    
         }
 
         @Override
