@@ -16,13 +16,15 @@ import jade.lang.acl.MessageTemplate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 
 public class AgentePeca extends Agent implements InterfaceAgenteForm {
 
     InterfaceAgenteForm myInterface;
     FormAgentePeca myForm = new FormAgentePeca(this);
-    int _local = 0;
+    int _local = 15;
     ArrayList<String> _servicesNeeded = new ArrayList<String>() {
         {
                 add("Storage4GB");
@@ -32,7 +34,6 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                 add("Storage64GB");
                 add("Storage128GB");
         }
-
     };
 
     protected void setup() {
@@ -57,14 +58,8 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
         myForm.limparTexto();//para limpar o quadro de texto
         solicitadorServicos solicitador = new solicitadorServicos();
         addBehaviour(new solicitadorServicos());//executa o comportamento que realizará as negociações
-        SetLocation(_local, solicitador);
+    }  
 
-    }
-    
-    public void SetLocation(int local, solicitadorServicos solicitador){
-        ArrayList<AID> AgentesEsteiras = buscarAgentes(this, "Local Peça", "Local");
-        solicitador.SendCFP(AgentesEsteiras, "Local Peça", "Local", Integer.toString(local));
-    } 
     public ArrayList<AID> buscarAgentes(Agent agentePedindo, String nomeServico, String tipoServico) {
         ArrayList<AID> aids = new ArrayList<>();
         DFAgentDescription agentDescription = new DFAgentDescription();
@@ -101,23 +96,23 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
         String ServicoPeca = _servicesNeeded.get(0);
         int _locationVencedor;
         
-        private void SendLocation(int location){
-            
-        }
-        
+
+    public void SetLocation(int local){
+        ArrayList<AID> AgentesEsteiras = buscarAgentes(myAgent, "Local Peça", "Local");
+        SendCFP(AgentesEsteiras, "Local", "Local Peça", Integer.toString(local));
+        ReloadLocal();        
+    } 
+    
         public int SendCFP(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content ){
             if (!AgentsThatDo.isEmpty()) {
-                while(true){
-                
-                }
                 ACLMessage cfpManufatura = new ACLMessage(ACLMessage.CFP);
                 for (AID AgenteFazManufatura : AgentsThatDo) {
                     myForm.atualizarTexto("Agente " + AgenteFazManufatura.getLocalName() + " faz");
                     cfpManufatura.addReceiver(AgenteFazManufatura);// carrega o Agentes que receberão o CFP
                 }
-                cfpManufatura.setContent(serviço + " " + Content);//colocar a tarefa e o critério (preco / distancia)
+                cfpManufatura.setContent(serviço + (serviço.equals("Local")? "":" ") + Content);//colocar a tarefa e o critério (preco / distancia)
                 cfpManufatura.setConversationId(ConversationID);//carrega o tipo de manufatura
-                cfpManufatura.setReplyWith("Local");//habilida o recebimento de propostas
+                cfpManufatura.setReplyWith("Local Peça");//habilida o recebimento de propostas
                 cfpManufatura.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);//carrega o protocolo ContractNet
                 myAgent.send(cfpManufatura);// envia os CFP aos agentes
                         // Prepara para receber a resposta do participante [PROPOSE ou REFUSE]
@@ -137,6 +132,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
             ACLMessage mensagem = null;//lê a mensagem de retorno
             switch (passo) {
                 case 1: //verifica o serviço necessário
+                    SetLocation(_local);
                     ServicoPeca = _servicesNeeded.get(0);
                     myForm.atualizarTexto("Necessito serviço " + ServicoPeca);
                     TentativaManufatura = 0;//para zerar as tentativas de busca de agentes no DF
@@ -264,17 +260,33 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
             reload.start();
         }
         private class ReloadLocal extends Thread{
+        
+            public int GetLocalOnMessage(String message){
+                final Pattern pattern = Pattern.compile("\\d+"); // the regex
+                final Matcher matcher = pattern.matcher(message); // your string
+
+                final ArrayList<Integer> ints = new ArrayList<>(); // results
+
+                while (matcher.find()) { // for each match
+                    ints.add(Integer.parseInt(matcher.group())); // convert to int
+                }
+                return ints.get(0);
+            }
+            @Override
             public void run(){
                 while(!_servicesNeeded.isEmpty()){
 
                     ACLMessage msg  = myAgent.receive();
-                    if(msg.getConversationId() != "Local"){
-                        _local = Integer.parseInt(msg.getContent());                   
+                    if(msg!=null){
+                    if("Local Peça".equals(msg.getConversationId())){
+                        _local = GetLocalOnMessage(msg.getContent());                   
 
+                    }
                     }
                     else{
                     myAgent.putBack(msg);
                     }
+                    
                 }
             }   
     }

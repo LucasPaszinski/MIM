@@ -12,15 +12,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 
 public class AgenteEsteira extends Agent {
     
     ArrayList<AID> _agentesMaquina = new ArrayList<>();
-    ArrayList<String> _localAgentesMaquina = new ArrayList<>();
+    ArrayList<Integer> _localAgentesMaquina = new ArrayList<>();
     ArrayList<AID> _agentesPeça = new ArrayList<>();
-    ArrayList<String> _localAgentesPeça = new ArrayList<>();
+    ArrayList<Integer> _localAgentesPeça = new ArrayList<>();
     Boolean _esteiraLigada = false;
+    
     
     ArrayList<String> _esteiraServicesArray = new ArrayList<String>()
             {
@@ -40,7 +43,15 @@ public class AgenteEsteira extends Agent {
     public Boolean GetIsLocalPosted(){
             return _isLocalPosted;
         }
-     public void postarServico(ArrayList<String> habilidades){
+    
+    public void retirarPostagem(Agent ag){
+        try { DFService.deregister(ag); }
+        catch (FIPAException fe) { fe.printStackTrace(); }
+    }
+
+    
+    public void postarServico(ArrayList<String> habilidades){
+        retirarPostagem(this);
         if(!this.GetIsLocalPosted()){//verifica se o serviço já foi postado
             DFAgentDescription dfd = new DFAgentDescription();
             dfd.setName(this.getAID());
@@ -61,7 +72,7 @@ public class AgenteEsteira extends Agent {
     
     public int GetLocationPeça(AID agente)
     {
-        return Integer.parseInt(_localAgentesPeça.get(_agentesPeça.indexOf(agente)));
+        return _localAgentesPeça.get(_agentesPeça.indexOf(agente));
     }
     
     protected void setup() {
@@ -84,6 +95,18 @@ public class AgenteEsteira extends Agent {
         public Esteira(){
         
         }
+        
+        public Integer GetLocalOnMessage(String message){
+            final Pattern pattern = Pattern.compile("\\d+"); // the regex
+            final Matcher matcher = pattern.matcher(message); // your string
+
+            final ArrayList<Integer> ints = new ArrayList<>(); // results
+
+            while (matcher.find()) { // for each match
+                ints.add(Integer.parseInt(matcher.group())); // convert to int
+            }
+            return ints.get(0);
+        }
         long TempoCiclo = new Date().getTime();
         
         int _posiçãoEsteira;
@@ -92,18 +115,17 @@ public class AgenteEsteira extends Agent {
             while(true){
                 
             ACLMessage mensagem = myAgent.receive();
-            if(mensagem != null){
-                int oi = 1;
-                if(mensagem.getConversationId().equalsIgnoreCase("Local")){
+            if(mensagem != null && mensagem. ){
+                if(mensagem.getConversationId().equalsIgnoreCase("Local Maquina")){
                     if(!_agentesMaquina.contains(mensagem.getSender())){
                         _agentesMaquina.add(mensagem.getSender());
-                        _localAgentesMaquina.add(String.format("{}",Integer.parseInt(mensagem.getContent())));
+                        _localAgentesMaquina.add(GetLocalOnMessage(mensagem.getContent()));
                     }
                 }
-                else if(mensagem.getConversationId().equalsIgnoreCase("Local")){
+                else if(mensagem.getConversationId().equalsIgnoreCase("Local Peça")){
                     if(!_agentesPeça.contains(mensagem.getSender())){
                         _agentesPeça.add(mensagem.getSender());
-                        _localAgentesPeça.add(String.format("{}",Integer.parseInt(mensagem.getContent())));
+                        _localAgentesPeça.add(GetLocalOnMessage(mensagem.getContent()));
                     }
                 }
                 else{
@@ -113,15 +135,24 @@ public class AgenteEsteira extends Agent {
             }
             if(new Date().getTime() - TempoCiclo > 2000){
                 TempoCiclo = new Date().getTime();
+                if(!_agentesPeça.isEmpty()){
+                    
                 for (int i = 0; i < _agentesPeça.size(); i++) {
-                    String value  = String.format("{0}",Integer.parseInt(_localAgentesPeça.get(i))+1);
+                    Integer value  = _localAgentesPeça.get(i);
+                    if(_localAgentesPeça.get(i) < 100){
+                    value++;
+                    }
+                    else{
+                        value=0;
+                    } 
                     _localAgentesPeça.add(i, value);
                     ACLMessage sender = new ACLMessage(ACLMessage.INFORM);
                     sender.addReceiver(_agentesPeça.get(i));
-                    sender.setContent(_localAgentesPeça.get(i));
-                    sender.setConversationId("Local");
+                    sender.setContent(Integer.toString(_localAgentesPeça.get(i)));
+                    sender.setConversationId("Local Peça");
                     myAgent.send(sender);
-                }   
+                }  
+                }
             }
             }    
         }
