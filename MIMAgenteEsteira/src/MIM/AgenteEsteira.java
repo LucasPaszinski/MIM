@@ -115,7 +115,7 @@ public class AgenteEsteira extends Agent {
             while(true){
                 
             ACLMessage mensagem = myAgent.receive();
-            if(mensagem != null && mensagem. ){
+            if(mensagem != null && (mensagem.getPerformative() == ACLMessage.CFP)){
                 if(mensagem.getConversationId().equalsIgnoreCase("Local Maquina")){
                     if(!_agentesMaquina.contains(mensagem.getSender())){
                         _agentesMaquina.add(mensagem.getSender());
@@ -146,7 +146,7 @@ public class AgenteEsteira extends Agent {
                         value=0;
                     } 
                     _localAgentesPeça.add(i, value);
-                    ACLMessage sender = new ACLMessage(ACLMessage.INFORM);
+                    ACLMessage sender = new ACLMessage();
                     sender.addReceiver(_agentesPeça.get(i));
                     sender.setContent(Integer.toString(_localAgentesPeça.get(i)));
                     sender.setConversationId("Local Peça");

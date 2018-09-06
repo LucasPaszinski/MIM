@@ -22,6 +22,7 @@ import javax.swing.JOptionPane;
 
 public class AgentePeca extends Agent implements InterfaceAgenteForm {
 
+    Boolean TreadAlive = false;
     InterfaceAgenteForm myInterface;
     FormAgentePeca myForm = new FormAgentePeca(this);
     int _local = 15;
@@ -50,6 +51,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
     }
 
     public void botaoSair() {
+        TreadAlive =false; 
         myForm.dispose();
         doDelete();//chama o método takedown
     }
@@ -137,6 +139,9 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                     myForm.atualizarTexto("Necessito serviço " + ServicoPeca);
                     TentativaManufatura = 0;//para zerar as tentativas de busca de agentes no DF
                     passo = 2;
+                    while (true){
+                       //testando outras coisas
+                    }
                     break;
                 case 2: //busca no DF os agentes que podem fazer a tarefa
                     myForm.atualizarTexto("Buscando Agentes que Fazem...");
@@ -256,11 +261,14 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
         }//fim do Action
         
         public void ReloadLocal(){
-            ReloadLocal reload = new ReloadLocal();
+            TreadAlive = true;
+            Thread reload = new ReloadLocal();
             reload.start();
         }
         private class ReloadLocal extends Thread{
         
+            public ReloadLocal(){}
+            
             public int GetLocalOnMessage(String message){
                 final Pattern pattern = Pattern.compile("\\d+"); // the regex
                 final Matcher matcher = pattern.matcher(message); // your string
@@ -274,7 +282,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
             }
             @Override
             public void run(){
-                while(!_servicesNeeded.isEmpty()){
+                while(TreadAlive){
 
                     ACLMessage msg  = myAgent.receive();
                     if(msg!=null){
@@ -284,7 +292,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                     }
                     }
                     else{
-                    myAgent.putBack(msg);
+                    //myAgent.putBack(msg);
                     }
                     
                 }
