@@ -22,9 +22,10 @@ import javax.swing.JOptionPane;
 
 public class AgentePeca extends Agent implements InterfaceAgenteForm {
 
+    Boolean TreadAlive = false;
     InterfaceAgenteForm myInterface;
     FormAgentePeca myForm = new FormAgentePeca(this);
-    int _local = 15;
+    int _local = 0;
     ArrayList<String> _servicesNeeded = new ArrayList<String>() {
         {
                 add("Storage4GB");
@@ -50,6 +51,8 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
     }
 
     public void botaoSair() {
+        TreadAlive =false; 
+        
         myForm.dispose();
         doDelete();//chama o método takedown
     }
@@ -256,11 +259,14 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
         }//fim do Action
         
         public void ReloadLocal(){
-            ReloadLocal reload = new ReloadLocal();
+            TreadAlive = true;
+            Thread reload = new ReloadLocal();
             reload.start();
         }
         private class ReloadLocal extends Thread{
         
+            public ReloadLocal(){}
+            
             public int GetLocalOnMessage(String message){
                 final Pattern pattern = Pattern.compile("\\d+"); // the regex
                 final Matcher matcher = pattern.matcher(message); // your string
@@ -274,7 +280,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
             }
             @Override
             public void run(){
-                while(!_servicesNeeded.isEmpty()){
+                while(TreadAlive){
 
                     ACLMessage msg  = myAgent.receive();
                     if(msg!=null){
@@ -284,7 +290,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                     }
                     }
                     else{
-                    myAgent.putBack(msg);
+                    //myAgent.putBack(msg);
                     }
                     
                 }
