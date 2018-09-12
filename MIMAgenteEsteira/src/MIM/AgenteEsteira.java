@@ -122,6 +122,7 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm{
             while(true){
                 
             ACLMessage mensagem = myAgent.receive();
+<<<<<<< HEAD
             if(mensagem != null){
                 if(mensagem.getPerformative() == ACLMessage.CFP){
                     if(mensagem.getConversationId().equalsIgnoreCase("Local Maquina")){
@@ -129,6 +130,13 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm{
                             _agentesMaquina.add(mensagem.getSender());
                             _localAgentesMaquina.add(GetLocalOnMessage(mensagem.getContent()));
                         }
+=======
+            if(mensagem != null && (mensagem.getPerformative() == ACLMessage.CFP)){
+                if(mensagem.getConversationId().equalsIgnoreCase("Local Maquina")){
+                    if(!_agentesMaquina.contains(mensagem.getSender())){
+                        _agentesMaquina.add(mensagem.getSender());
+                        _localAgentesMaquina.add(GetLocalOnMessage(mensagem.getContent()));
+>>>>>>> 103427546128fb3219b2015cea2f79afd3feef6b
                     }
                     else if(mensagem.getConversationId().equalsIgnoreCase("Local Peça")){
                         if(!_agentesPeça.contains(mensagem.getSender())){
