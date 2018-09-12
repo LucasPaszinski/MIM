@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 
-public class AgenteEsteira extends Agent implements InterfaceAgenteForm{
+public class AgenteEsteira extends Agent implements InterfaceAgenteForm {
     
     ArrayList<AID> _agentesMaquina = new ArrayList<>();
     ArrayList<Integer> _localAgentesMaquina = new ArrayList<>();
@@ -99,6 +99,7 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm{
     }
 
     public class Esteira extends Behaviour {
+        
         public Esteira(){
         
         }
@@ -114,6 +115,7 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm{
             }
             return ints.get(0);
         }
+        
         long TempoCiclo = new Date().getTime();
         
         int _posiçãoEsteira;
@@ -122,30 +124,22 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm{
             while(true){
                 
             ACLMessage mensagem = myAgent.receive();
-<<<<<<< HEAD
-            if(mensagem != null){
-                if(mensagem.getPerformative() == ACLMessage.CFP){
+            if(mensagem != null ){
+                if((mensagem.getPerformative() == ACLMessage.CFP)){
                     if(mensagem.getConversationId().equalsIgnoreCase("Local Maquina")){
                         if(!_agentesMaquina.contains(mensagem.getSender())){
                             _agentesMaquina.add(mensagem.getSender());
                             _localAgentesMaquina.add(GetLocalOnMessage(mensagem.getContent()));
                         }
-=======
-            if(mensagem != null && (mensagem.getPerformative() == ACLMessage.CFP)){
-                if(mensagem.getConversationId().equalsIgnoreCase("Local Maquina")){
-                    if(!_agentesMaquina.contains(mensagem.getSender())){
-                        _agentesMaquina.add(mensagem.getSender());
-                        _localAgentesMaquina.add(GetLocalOnMessage(mensagem.getContent()));
->>>>>>> 103427546128fb3219b2015cea2f79afd3feef6b
                     }
                     else if(mensagem.getConversationId().equalsIgnoreCase("Local Peça")){
-                        if(!_agentesPeça.contains(mensagem.getSender())){
-                            _agentesPeça.add(mensagem.getSender());
-                            _localAgentesPeça.add(GetLocalOnMessage(mensagem.getContent()));
-                            myForm.CreatePeça(mensagem.getSender().getLocalName());
+                            if(!_agentesPeça.contains(mensagem.getSender())){
+                                _agentesPeça.add(mensagem.getSender());
+                                _localAgentesPeça.add(GetLocalOnMessage(mensagem.getContent()));
+                                myForm.CreatePeça(mensagem.getSender().getLocalName());
+                            }
                         }
-                    }
-                }                
+                    }                
                 if(mensagem.getPerformative() == ACLMessage.CANCEL){
                     if(mensagem.getConversationId().equalsIgnoreCase("Local Maquina")){
                         if(_agentesMaquina.contains(mensagem.getSender())){
@@ -163,12 +157,8 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm{
                         }
                     }
                 }
-                
-                else{
-                    //myAgent.putBack(mensagem);
-                }
-                
-            }
+            }             
+            
             if(new Date().getTime() - TempoCiclo > 2000){
                 TempoCiclo = new Date().getTime();
                 if(!_agentesPeça.isEmpty()){
@@ -194,9 +184,15 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm{
             }
             }    
         }
-       
-        
+
+        @Override
+        public boolean done() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+
         public void SetLocationPeça(String Agentes, int local){
+            
             int x=0;
             int y=0;
             
@@ -219,9 +215,7 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm{
             
             myForm.RealodLocationPeça(Agentes, x, y);
         }
-        @Override
         public boolean done() {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-    }
 }

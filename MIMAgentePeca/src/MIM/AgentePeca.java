@@ -52,10 +52,6 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
 
     public void botaoSair() {
         TreadAlive =false; 
-<<<<<<< HEAD
-        
-=======
->>>>>>> 103427546128fb3219b2015cea2f79afd3feef6b
         myForm.dispose();
         doDelete();//chama o método takedown
     }
@@ -143,10 +139,6 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                     myForm.atualizarTexto("Necessito serviço " + ServicoPeca);
                     TentativaManufatura = 0;//para zerar as tentativas de busca de agentes no DF
                     passo = 2;
-                    while (true){
-                       //testando outras coisas
-                    }
-                    break;
                 case 2: //busca no DF os agentes que podem fazer a tarefa
                     myForm.atualizarTexto("Buscando Agentes que Fazem...");
                     AgentesFazManufatura = buscarAgentes(myAgent, ServicoPeca, "Manufatura");//faz uma nova busca por novo agente

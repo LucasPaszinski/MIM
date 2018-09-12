@@ -26,7 +26,7 @@ public class FormAgenteEsteira extends javax.swing.JFrame {
        agentePeça.add(agentePeçaNome);
        agentePeça.setVisible(true);
        agentePeça.setVisible(true);
-       agentePeça.setLocation(15, 15);
+       agentePeça.setLocation(05, 05);
        agentePeça.setSize(60, 40);
        agentePeça.setBackground(Color.pink);
        AgentesPeças.add(agentePeça);
