@@ -41,13 +41,14 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
     boolean _hasServicePosted = false;// false = sem postagem, true = com postagem
     String _machineAsnwer;//indica a resposta da máquina a manutenção que executou
     ModbusRTU _modbus = new ModbusRTU();
+    NegociadorMaquina Negociador = new NegociadorMaquina();
     
     
     protected void setup() { 
         System.out.println("Oi, sou agente "+ getLocalName());
         myForm.setTitle("Agente " + getAID().getLocalName());
         myForm.setVisible(true);//para ativar o form
-        addBehaviour(new NegociadorMaquina());// Comportamento que negocia com agentes 
+        addBehaviour(Negociador);// Comportamento que negocia com agentes 
         ModbusConfigurationSetup();
         myForm.SetServiceArray(this._machineServicesArray);
         myForm.RealoadServiçes();
@@ -58,6 +59,7 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
         //System.exit(0);//comando para fechar o programa- retira para evitar que ao fechar um programa feche os demais
     }
     public void botaoSair(){  
+        Negociador.RemoveLocation();
         _modbus.Disconnect();
         myForm.dispose();//para fechar o form
         if(getPostagemServico()){ retirarPostagem(this);}// retira o que fora postado, caso haja
