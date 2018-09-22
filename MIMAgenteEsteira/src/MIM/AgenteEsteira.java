@@ -3,6 +3,7 @@ package MIM;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -81,12 +82,12 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm {
         _esteiraLigada = true;
         myForm.setVisible(true);
         postarServico(_esteiraServicesArray);
-        iniciarProducao();
-        
+        iniciarProducao();   
     }
     
     public void iniciarProducao() {
-        addBehaviour(new Esteira());//executa o comportamento que realizará as negociações
+        addBehaviour(new Esteira());
+        //addBehaviour(new ComportamentoCiclico());//executa o comportamento que realizará as negociações
     }
     protected void takeDown() {
         System.out.println("Agente " + getLocalName() + " Encerrado");
@@ -130,6 +131,7 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm {
                         if(!_agentesMaquina.contains(mensagem.getSender())){
                             _agentesMaquina.add(mensagem.getSender());
                             _localAgentesMaquina.add(GetLocalOnMessage(mensagem.getContent()));
+                            SetLocationMaquina(mensagem.getSender().getLocalName(),GetLocalOnMessage(mensagem.getContent()));
                         }
                     }
                     else if(mensagem.getConversationId().equalsIgnoreCase("Local Peça")){
@@ -143,17 +145,19 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm {
                 if(mensagem.getPerformative() == ACLMessage.CANCEL){
                     if(mensagem.getConversationId().equalsIgnoreCase("Local Maquina")){
                         if(_agentesMaquina.contains(mensagem.getSender())){
+                            myForm.RemoveMaquina(mensagem.getSender().getLocalName());
                             int index = _agentesMaquina.indexOf(mensagem.getSender());
                             _agentesMaquina.remove(index);
                             _localAgentesMaquina.remove(index);
                         }
                     }
                     else if(mensagem.getConversationId().equalsIgnoreCase("Local Peça")){
-                        if(!_agentesPeça.contains(mensagem.getSender())){
-                            int index = _agentesMaquina.indexOf(mensagem.getSender());
-                            _agentesMaquina.remove(index);
-                            _localAgentesMaquina.remove(index);
+                        if(_agentesPeça.contains(mensagem.getSender())){
                             myForm.RemovePeça(mensagem.getSender().getLocalName());
+                            int index = _agentesPeça.indexOf(mensagem.getSender());
+                            _agentesPeça.remove(index);
+                            _localAgentesPeça.remove(index);
+                            
                         }
                     }
                 }
@@ -190,7 +194,34 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
+    public class ComportamentoCiclico extends CyclicBehaviour{
 
+        @Override
+        public void action() {
+                if(!_agentesPeça.isEmpty()){
+                    
+                for (int i = 0; i < _agentesPeça.size(); i++) {
+                    Integer value  = _localAgentesPeça.get(i);
+                    
+                    if(_localAgentesPeça.get(i) < 100){
+                    value++;
+                    }
+                    else{
+                        value=0;
+                    } 
+                    _localAgentesPeça.add(i, value);
+                    ACLMessage sender = new ACLMessage();
+                    sender.addReceiver(_agentesPeça.get(i));
+                    sender.setContent(Integer.toString(_localAgentesPeça.get(i)));
+                    sender.setConversationId("Local Peça");
+                    myAgent.send(sender);
+                    SetLocationPeça(_agentesPeça.get(i).getLocalName(),value);
+                }  
+                } 
+            this.block(2000);//To change body of generated methods, choose Tools | Templates.
+        }
+        
+    }
         public void SetLocationPeça(String Agentes, int local){
             
             int x=0;
@@ -198,22 +229,47 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm {
             
             if(local<25){
                 y = 05;
-                x = 500 - local*20;               
+                x = 450 - local*20;               
             }
-            if(25<=local && local<50){
+            if(local>=25 && local<50){
                 x = 05;
-                y = 100 + local*20;               
+                y = 05 + (local-25)*20;               
             }
-            if(50<=local && local<75){
-                y = 455;
-                x = 100 + local*20;               
+            if(local>=50 && local<75){
+                y = 435;
+                x = 05 + (local-50)*20;               
             }
-            if(75<=local){
-                x = 455;
-                y = 500 - local*20;               
+            if(local>=75){
+                x = 435;
+                y = 450 - (local-75)*20;               
             }
             
             myForm.RealodLocationPeça(Agentes, x, y);
+        }
+        
+        public void SetLocationMaquina(String Agentes, int local){
+            
+            int x=0;
+            int y=0;
+            
+            if(local<25){
+                y = 0;
+                x = 700 - local*28;               
+            }
+            if(local>=25 && local<50){
+                x = 0;
+                y = 0 + (local-25)*28;               
+            }
+            if(local>=50 && local<75){
+                y = 600;
+                x = 0 + (local-50)*28;               
+            }
+            if(local>=75){
+                x = 600 ;
+                y = 700 - (local-75)*28;               
+            }
+            
+            myForm.CreateMaquina(Agentes, x, y);
         }
         public boolean done() {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

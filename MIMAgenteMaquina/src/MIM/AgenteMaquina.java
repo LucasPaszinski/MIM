@@ -1,15 +1,15 @@
-/* AgenteMaquina que provoca a interação com máquna
- * Implementado por João Alvarez Peixoto
- */
 package MIM;
 
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
+import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
@@ -74,8 +74,8 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
         
     public void setPostagemServico(boolean PostSevico){
         this._hasServicePosted = PostSevico;//se true = há serviços postados, se false = não há serviços postados
-        this.setEstadoMaquina(true);//indica que a máquina está livre para o trabalho
-        
+        this.setEstadoMaquina(PostSevico);//indica que a máquina está livre para o trabalho
+
     }
     public boolean getPostagemServico(){
         return this._hasServicePosted;//se true = há serviços postados, se false = não há serviços postados
@@ -127,23 +127,94 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
             catch (FIPAException fe) { fe.printStackTrace(); } 
             this.setPostagemServico(true);//para indicar que um serviço foi postado
         }else{
-            JOptionPane.showMessageDialog(null, "Serviço já postado", "Máquina" + getAID().getLocalName(), JOptionPane.INFORMATION_MESSAGE);                              
+            JOptionPane.showMessageDialog(null, "Serviço já postado", "Máquina" + getAID().getLocalName(), JOptionPane.INFORMATION_MESSAGE); 
+            String[] options = {"Sim", "Não"};
+            int x = JOptionPane.showOptionDialog(null, "Serviços ja foram postados, gostaria de retira-lós? (Não fazer isso com serviços rodando)", "Serviço Já Postado", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+            if(x==0){
+                retirarPostagem(this);
+            }
+            
         }
     }
  
     public void retirarPostagem(Agent ag){
-        try { DFService.deregister(ag); }
+        try { DFService.deregister(ag);
+            setPostagemServico(false);
+            setEstadoMaquina(false);
+        }
         catch (FIPAException fe) { fe.printStackTrace(); }
     }
 
     public class NegociadorMaquina extends Behaviour { 
         ACLMessage Termino;//para mandar o INFORM no final do processo
         
+        public void SetLocation(int local){
+        ArrayList<AID> AgentesEsteiras = buscarAgentes(myAgent, "Local Peça", "Local");
+        SendCFP(AgentesEsteiras, "Local", "Local Maquina", Integer.toString(local));      
+        } 
+    
+        public void RemoveLocation(){
+        ArrayList<AID> AgentesEsteiras = buscarAgentes(myAgent, "Local Peça", "Local");
+        SendCancel(AgentesEsteiras, "Local", "Local Maquina");        
+        }
+        
+        public void SendCFP(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content ){
+                SendMessage(AgentsThatDo, serviço, ConversationID,  Content, ACLMessage.CFP );            
+        }
+        
+        public void SendCancel (ArrayList<AID> AgentsThatDo,String serviço,String ConversationID ){
+                SendMessage(AgentsThatDo, serviço, ConversationID,  "", ACLMessage.CANCEL );            
+        }
+        public void SendMessage(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content, int messageType ){
+        if (!AgentsThatDo.isEmpty()) {
+                ACLMessage cfpManufatura = new ACLMessage(messageType);
+                for (AID AgenteFazManufatura : AgentsThatDo) {
+                    myForm.atualizarTexto("Agente " + AgenteFazManufatura.getLocalName() + " faz");
+                    cfpManufatura.addReceiver(AgenteFazManufatura);// carrega o Agentes que receberão o CFP
+                }
+                cfpManufatura.setContent(serviço + (serviço.equals("Local")? "":" ") + Content);//colocar a tarefa e o critério (preco / distancia)
+                cfpManufatura.setConversationId(ConversationID);//carrega o tipo de manufatura
+                cfpManufatura.setReplyWith("Local Peça");//habilida o recebimento de propostas
+                cfpManufatura.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);//carrega o protocolo ContractNet
+                myAgent.send(cfpManufatura);// envia os CFP aos agentes
+                        // Prepara para receber a resposta do participante [PROPOSE ou REFUSE]
+                myForm.atualizarTexto("Enviando CFP...");
+        }
+        }
+        public ArrayList<AID> buscarAgentes(Agent agentePedindo, String nomeServico, String tipoServico) {
+        ArrayList<AID> aids = new ArrayList<>();
+        DFAgentDescription agentDescription = new DFAgentDescription();
+        ServiceDescription serviceDescription = new ServiceDescription();
+
+        serviceDescription.setType(tipoServico);
+        serviceDescription.setName(nomeServico);
+        agentDescription.addServices(serviceDescription);
+
+        try {
+            for (DFAgentDescription agent : DFService.search(agentePedindo, agentDescription)) {
+                aids.add(agent.getName());
+            }
+        } catch (FIPAException ex) {
+            aids = null;
+            System.out.println("Erro de busca");
+        }
+        return aids;
+        
+    }
+        
         public NegociadorMaquina(){ //construtor da classe  
         }
+        
+        Boolean isFirstTime = true ; 
+        
         @Override
-        public void action(){  
-            ACLMessage mensagem = myAgent.receive();//lê a mensage            
+        public void action(){
+            
+            ACLMessage mensagem = myAgent.receive();//lê a mensage  
+            if(isFirstTime && getPostagemServico()){
+                SetLocation(_location);
+                isFirstTime = false;
+            }
             if (mensagem != null) {                                                             
                 if (mensagem.getPerformative() == ACLMessage.CFP) {                
                     myForm.atualizarTexto(""+mensagem.getSender().getLocalName()+" -> "+mensagem.getContent());                   
@@ -160,24 +231,23 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
                         ACLMessage PropostaMaquina = mensagem.createReply();
                         PropostaMaquina.setPerformative(ACLMessage.PROPOSE);
                         PropostaMaquina.setContent(""+obterCusto(CriterioM));
+                        PropostaMaquina.addUserDefinedParameter("Location", Integer.toString(_location));
                         myAgent.send(PropostaMaquina);
                           myForm.atualizarTexto("Posso com custo de "+PropostaMaquina.getContent());
                         //setEstadoMaquina(false);//para ocupar a máquina e não atender outro pedido
                     }
                 }               
-                if (mensagem.getPerformative() == ACLMessage.REJECT_PROPOSAL) {//proposta foi rejeitada
+                if (mensagem.getPerformative() == ACLMessage.REJECT_PROPOSAL && getEstadoMaquina()) {//proposta foi rejeitada
                     myForm.atualizarTexto("Proposta Recusada");
                     setEstadoMaquina(true);//para liberar a máquina   
                 }
-                if (mensagem.getPerformative() == ACLMessage.ACCEPT_PROPOSAL) {//proposta foi aceita                    
+                if (mensagem.getPerformative() == ACLMessage.ACCEPT_PROPOSAL && getEstadoMaquina()) {//proposta foi aceita                    
                     myForm.atualizarTexto("Proposta foi Aceita");
                     setEstadoMaquina(false);//para manter a máquina ocupada 
-                    ACLMessage location = new ACLMessage();
-                    location.setContent("Localização: "+_location);
-                    location.setConversationId("Local Maquina");
                     myAgent.send(mensagem);
                 }
                 if (mensagem.getPerformative() == ACLMessage.REQUEST) {
+                    myForm.atualizarTexto("Peça está aqui, é hora de pergar ela!");
                     String informacao = mensagem.getContent();
                     setEstadoMaquina(false);//para manter a máquina ocupada 
                       myForm.atualizarTexto("Requisitado por "+mensagem.getSender().getLocalName());
@@ -187,9 +257,7 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
                     Thread Maquina = new ExecutaMaquina(informacao);// executa a thread que fara a tarefa propriamente                    
                     Maquina.start();//executa a thread
                 }
-                else{
-                    myAgent.putBack(mensagem);
-                }
+                
             }
             else if(getFimExecucaoMaquina()){
                 setFimExecucaoMaquina(false); //para resetar a flag de FimExecucaoMaquina               

@@ -25,7 +25,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
     Boolean TreadAlive = false;
     InterfaceAgenteForm myInterface;
     FormAgentePeca myForm = new FormAgentePeca(this);
-    int _local = 0;
+    int _local = 51;
     ArrayList<String> _servicesNeeded = new ArrayList<String>() {
         {
                 add("Storage4GB");
@@ -47,11 +47,13 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
 
     protected void takeDown() {
         System.out.println("Agente " + getLocalName() + " Encerrado");
+        
         System.exit(0);//comando para fechar o programa
     }
 
     public void botaoSair() {
-        TreadAlive =false; 
+        TreadAlive =false;
+        this.doWait(10000);
         myForm.dispose();
         doDelete();//chama o método takedown
     }
@@ -105,9 +107,20 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
         ReloadLocal();        
     } 
     
+    public void RemoveLocation(){
+        ArrayList<AID> AgentesEsteiras = buscarAgentes(myAgent, "Local Peça", "Local");
+        SendCancel(AgentesEsteiras, "Local", "Local Peça");        
+    }
         public int SendCFP(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content ){
-            if (!AgentsThatDo.isEmpty()) {
-                ACLMessage cfpManufatura = new ACLMessage(ACLMessage.CFP);
+               return SendMessage(AgentsThatDo, serviço, ConversationID,  Content, ACLMessage.CFP );            
+        }
+        
+        public int SendCancel (ArrayList<AID> AgentsThatDo,String serviço,String ConversationID ){
+               return SendMessage(AgentsThatDo, serviço, ConversationID,  "", ACLMessage.CANCEL );            
+        }
+        public int SendMessage(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content, int messageType ){
+        if (!AgentsThatDo.isEmpty()) {
+                ACLMessage cfpManufatura = new ACLMessage(messageType);
                 for (AID AgenteFazManufatura : AgentsThatDo) {
                     myForm.atualizarTexto("Agente " + AgenteFazManufatura.getLocalName() + " faz");
                     cfpManufatura.addReceiver(AgenteFazManufatura);// carrega o Agentes que receberão o CFP
@@ -127,8 +140,18 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                 //quando for implemena a troca de serviços deve ser colocado aqui
                 return 2;
             }
-        }
-        
+    }
+            public int GetLocalOnMessage(String message){
+                final Pattern pattern = Pattern.compile("\\d+"); // the regex
+                final Matcher matcher = pattern.matcher(message); // your string
+
+                final ArrayList<Integer> ints = new ArrayList<>(); // results
+
+                while (matcher.find()) { // for each match
+                    ints.add(Integer.parseInt(matcher.group())); // convert to int
+                }
+                return ints.get(0);
+            }
         @Override
         public void action() {
             ACLMessage mensagem = null;//lê a mensagem de retorno
@@ -159,7 +182,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                     while(respostasRestantes > 0){
                         Date datenow = new Date();
                         long now = datenow.getTime();
-                        mensagem = myAgent.receive();
+                        mensagem = myAgent.receive(MessageTemplate.or(MessageTemplate.MatchPerformative(ACLMessage.PROPOSE),MessageTemplate.MatchPerformative(ACLMessage.REFUSE)));
                         if(now-start > 5000){
                            break;
                         }
@@ -173,7 +196,8 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                                 myForm.atualizarTexto("Agente: " + mensagem.getSender().getLocalName() + (" propos " + mensagem.getContent()));
                                 if( AgenteVencedorManufatura == null || custoManufatura < custoVencedor ){
                                     AgenteVencedorManufatura = mensagem.getSender();
-                                    custoVencedor = custoManufatura;//assume o custoVencedorM como sendo o deste agente que propos
+                                    custoVencedor = custoManufatura;
+                                    _locationVencedor = GetLocalOnMessage(mensagem.getUserDefinedParameter("Location"));    //assume o custoVencedorM como sendo o deste agente que propos
                                 }  
                                 --respostasRestantes;
                             }
@@ -216,17 +240,16 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                     passo = 6;
                     break;
                 case 6: //Envia um REQUEST ao agente vencedor
-                    mensagem = myAgent.receive();
-//                    if(mensagem.getSender() == AgenteVencedorManufatura){
- //                       _locationVencedor = Integer.parseInt(mensagem.getContent());                        
- //                   }
-                    ACLMessage msgReqManufatura = new ACLMessage(ACLMessage.REQUEST);// configura uma mensagem de REQUEST
-                    msgReqManufatura.addReceiver(AgenteVencedorManufatura);// configura o destinatário
-                    msgReqManufatura.setContent(ServicoPeca);//indica o serviço a ser executado
-                    myAgent.send(msgReqManufatura);//envio da mensagem de REQUEST 
-                    myForm.atualizarTexto("Serviço para  " + AgenteVencedorManufatura.getLocalName());
-                    
-                    passo = 7;
+                    if(_locationVencedor==_local){
+                        myForm.atualizarTexto("Peça Chegou a Maquina, avisando máquina " + AgenteVencedorManufatura.getLocalName());
+                        RemoveLocation();
+                        ACLMessage msgReqManufatura = new ACLMessage(ACLMessage.REQUEST);// configura uma mensagem de REQUEST
+                        msgReqManufatura.addReceiver(AgenteVencedorManufatura);// configura o destinatário
+                        msgReqManufatura.setContent(ServicoPeca);//indica o serviço a ser executado
+                        myAgent.send(msgReqManufatura);//envio da mensagem de REQUEST 
+                        myForm.atualizarTexto("Serviço para  " + AgenteVencedorManufatura.getLocalName());
+                        passo = 7;
+                    }
                     break;
                 case 7: //Receber o sinal de final de processo INFORM(Estado) da máquina ou um FAILURE
                     mensagem = myAgent.receive();
@@ -234,11 +257,13 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                         if (mensagem.getPerformative() == ACLMessage.INFORM) {
                             myForm.atualizarTexto("Agente " + mensagem.getSender().getLocalName() + " disse " + mensagem.getContent());
                             //JOptionPane.showMessageDialog(null, "Manufatura "+ mensagem.getContent(), "Peca" + getAID().getLocalName(), JOptionPane.INFORMATION_MESSAGE);                   
+                            SetLocation(_local);
                             passo = 8;//fim da tarefa
                         }
                         if (mensagem.getPerformative() == ACLMessage.FAILURE) {
                             myForm.atualizarTexto("Agente " + mensagem.getSender().getLocalName() + " disse " + mensagem.getContent());
                             //JOptionPane.showMessageDialog(null, "Manufatura "+ mensagem.getContent(), "Peca" + getAID().getLocalName(), JOptionPane.INFORMATION_MESSAGE);            
+                           SetLocation(_local); 
                             passo = 8;//fim da tarefa, verificar se há mais tarefa na lista
                         }
                     }
@@ -265,33 +290,19 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
         
             public ReloadLocal(){}
             
-            public int GetLocalOnMessage(String message){
-                final Pattern pattern = Pattern.compile("\\d+"); // the regex
-                final Matcher matcher = pattern.matcher(message); // your string
 
-                final ArrayList<Integer> ints = new ArrayList<>(); // results
-
-                while (matcher.find()) { // for each match
-                    ints.add(Integer.parseInt(matcher.group())); // convert to int
-                }
-                return ints.get(0);
-            }
             @Override
             public void run(){
                 while(TreadAlive){
-
-                    ACLMessage msg  = myAgent.receive();
+                    ACLMessage msg  = myAgent.receive(MessageTemplate.MatchConversationId("Local Peça"));
                     if(msg!=null){
-                    if("Local Peça".equals(msg.getConversationId())){
-                        _local = GetLocalOnMessage(msg.getContent());                   
+                        if("Local Peça".equals(msg.getConversationId())){
+                            _local = GetLocalOnMessage(msg.getContent());                   
 
-                    }
-                    }
-                    else{
-                    //myAgent.putBack(msg);
-                    }
-                    
+                        }
+                    }                    
                 }
+                RemoveLocation();
             }   
     }
         @Override

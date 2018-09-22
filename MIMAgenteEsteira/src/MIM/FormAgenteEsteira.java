@@ -28,7 +28,7 @@ public class FormAgenteEsteira extends javax.swing.JFrame {
        agentePeça.setVisible(true);
        agentePeça.setLocation(05, 05);
        agentePeça.setSize(60, 40);
-       agentePeça.setBackground(Color.pink);
+       agentePeça.setBackground(new Color((int)(Math.random()*0x1000000)));
        AgentesPeças.add(agentePeça);
        
     }
@@ -43,13 +43,48 @@ public class FormAgenteEsteira extends javax.swing.JFrame {
     }
     
     public void RemovePeça(String Agente){
+        try{
        for(JPanel jpanel: AgentesPeças){
            if(jpanel.getName().equalsIgnoreCase(Agente)){
-            jPanel3.remove(jpanel);
+            jpanel.setVisible(false);
             AgentesPeças.remove(AgentesPeças.indexOf(jpanel));
+           }  
+       }}catch(Exception e){};
+    }
+        public void CreateMaquina(String Agente,int x, int y){
+       JPanel agentePeça = new JPanel();
+       jPanel6.add(agentePeça);
+       JTextField agentePeçaNome = new JTextField();
+       agentePeça.setName(Agente);
+       agentePeçaNome.setText("Maquina"+Agente);
+       agentePeçaNome.setAlignmentX(0);
+       agentePeçaNome.setAlignmentY(50);
+       agentePeça.add(agentePeçaNome);
+       agentePeça.setVisible(true);
+       agentePeça.setVisible(true);
+       agentePeça.setLocation(x, y);
+       agentePeça.setSize(100, 100);
+       agentePeça.setBackground(new Color((int)(Math.random()*0x1000000)));
+       AgentesPeças.add(agentePeça);
+       
+    }
+    public void RealodLocationMaquina(String Agente, int x, int y){
+       for(JPanel jpanel: AgentesPeças){
+           if(jpanel.getName().equalsIgnoreCase(Agente)){
+   
            }
            
        }
+    }
+    
+    public void RemoveMaquina(String Agente){
+        try{
+       for(JPanel jpanel: AgentesPeças){
+           if(jpanel.getName().equalsIgnoreCase(Agente)){
+            jpanel.setVisible(false);
+            AgentesPeças.remove(AgentesPeças.indexOf(jpanel));
+           }  
+       }}catch(Exception e){};
     }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -65,7 +100,7 @@ public class FormAgenteEsteira extends javax.swing.JFrame {
         jPanel4.setMaximumSize(new java.awt.Dimension(700, 700));
         jPanel4.setMinimumSize(new java.awt.Dimension(700, 700));
 
-        jPanel6.setMaximumSize(new java.awt.Dimension(1000, 1000));
+        jPanel6.setMaximumSize(new java.awt.Dimension(500, 500));
         jPanel6.setMinimumSize(new java.awt.Dimension(500, 500));
         jPanel6.setPreferredSize(new java.awt.Dimension(700, 700));
 
@@ -195,10 +230,8 @@ public class FormAgenteEsteira extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     // End of variables declaration//GEN-END:variables
