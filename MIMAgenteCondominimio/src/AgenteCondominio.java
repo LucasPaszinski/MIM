@@ -22,6 +22,7 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
     protected void Setup(){
         System.out.println("Oi, sou agente "+ getLocalName());
         myForm.setTitle("Agente " + getAID().getLocalName());
+        postarServico(_MensageiroServicesArray); // posta que relealiza o serviço do tipo mensageiro e as atividade mensagem maquina e peça
         myForm.setVisible(true);//para ativar o form
     }
     protected void takeDown() {
@@ -35,6 +36,49 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
         doDelete();//chama o método takedown
     }
     
+        
+    ArrayList<String> _MensageiroServicesArray = new ArrayList<String>()
+    {
+        {
+            add("Mensagem Maquina");
+            add("Mensagem Peça");
+        }
+    }; 
+    private Boolean _isMensageiroPosted = false;
+        
+    public void SetIsLocalPosted(Boolean state){
+        _isMensageiroPosted = state;
+    }
+    
+    public Boolean GetIsLocalPosted(){
+            return _isMensageiroPosted;
+    }
+    
+    public void retirarPostagem(Agent ag){
+        try { DFService.deregister(ag); }
+        catch (FIPAException fe) { fe.printStackTrace(); }
+    }
+        
+    public void postarServico(ArrayList<String> habilidades){
+        retirarPostagem(this);
+        if(!this.GetIsLocalPosted()){//verifica se o serviço já foi postado
+            DFAgentDescription dfd = new DFAgentDescription();
+            dfd.setName(this.getAID());
+            for(String habilidade : habilidades) {
+                ServiceDescription sd = new ServiceDescription();
+                sd.setType("Mensageiro");
+                sd.setName(habilidade);
+                sd.setOwnership(getLocalName());
+                dfd.addServices(sd);                
+            }
+            try { DFService.register(this, dfd); }
+            catch (FIPAException fe) { fe.printStackTrace(); } 
+            this.SetIsLocalPosted(true);//para indicar que um serviço foi postado
+        }else{
+            JOptionPane.showMessageDialog(null, "Serviço já postado", "Máquina" + getAID().getLocalName(), JOptionPane.INFORMATION_MESSAGE);                              
+        }
+    }
+    //endregion 
     public AgenteCondominio() { 
         //METODO CONSTRUTOR
     }
