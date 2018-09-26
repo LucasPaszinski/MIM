@@ -77,11 +77,29 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
     public class Mensageiro extends CyclicBehaviour {
         
         public Mensageiro(){
-        //CONTRUTOR
+        //CONTRUTOR pois é unico jeito de acessar os metodos do behaviour (java wtf ta no mesmo projeto)
         }
         @Override
         public void action() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            ACLMessage msg = myAgent.receive();
+            if(msg!=null){
+                if(msg.getPerformative() == ACLMessage.INFORM){
+                    if(msg.getConversationId()=="Mensagem Maquina"){
+                        //envia as mensagens para o form
+                    }
+                    if(msg.getConversationId()=="Mensagem Peça"){
+                        //envia as mensagens para o form 
+                    }
+                }
+            }
+                
+                
+                
+        
+                
+                
+                
+                
         }
         
     }
