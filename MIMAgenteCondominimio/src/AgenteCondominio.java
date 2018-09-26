@@ -12,16 +12,17 @@ import javax.swing.JOptionPane;
 public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio{
     
     InterfaceAgenteCondominio myInterface;
-    FormAgenteCondominio myForm = new FormAgenteCondominio();
+    FormAgenteCondominio myForm = new FormAgenteCondominio(this);
     //atributos
-    public String MensagemPeca;
-    public String MensagemMaquina;
+    private String MensagemPeca;
+    private String MensagemMaquina;
     Mensageiro Mensageiro = new Mensageiro();
     
     
     protected void Setup(){
         System.out.println("Oi, sou agente "+ getLocalName());
         myForm.setTitle("Agente " + getAID().getLocalName());
+        myForm.AddMessageMaquina("Estou Vivo!", "Agente Teste");
         postarServico(_MensageiroServicesArray); // posta que relealiza o serviço do tipo mensageiro e as atividade mensagem maquina e peça
         addBehaviour(Mensageiro); // inicia o comportamento Mensageiro
         myForm.setVisible(true);//para ativar o form
@@ -89,8 +90,8 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
         return MensagemPeca;
     }
     
-    public void setMensangemPeca(String MP) {
-        this.MensagemPeca = MP;
+    public void setMensangemPeca(String MensagemPeça) {
+        this.MensagemPeca = MensagemPeça;
     }
     
     public String getMensagemMaquina() {
@@ -137,15 +138,7 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
                         //envia as mensagens para o form 
                     }
                 }
-            }
-                
-                
-                
-        
-                
-                
-                
-                
+            }             
         }
         
     }

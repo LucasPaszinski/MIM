@@ -1,31 +1,27 @@
 
+import java.sql.Date;
+import java.time.LocalDate;
+import javafx.scene.layout.Border;
+
+
 public class FormAgenteCondominio extends javax.swing.JFrame {
-    private String nameAgent;
-    private String Time_clock;
-
-    public String getNameAgent() {
-        return nameAgent;
-    }
-
-    public void setNameAgent(String nA) {
-        this.nameAgent = nA;
-    }
-
-    public String getTime_clock() {
-        return Time_clock;
-    }
-
-    public void setTime_clock(String Tc) {
-        this.Time_clock = Tc;
-    }
+    private final InterfaceAgenteCondominio myInterface;
     
-    
-    
-
-    public FormAgenteCondominio() {
+    public FormAgenteCondominio(InterfaceAgenteCondominio myNewInterface) {
         initComponents();
+        this.myInterface = myNewInterface;
+    }
+    public void AddMessagePeça(String Msg,String NomeAgente){
         
     }
+    
+    public void AddMessageMaquina(String Msg,String NomeAgente){
+        javax.swing.JTextPane mensagem = new javax.swing.JTextPane();
+        mensagem.setText(NomeAgente+": /n "+Msg+"./n "+Date.valueOf(LocalDate.MAX));
+        
+        this.CampoPeca.add(mensagem); 
+    }
+    
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
