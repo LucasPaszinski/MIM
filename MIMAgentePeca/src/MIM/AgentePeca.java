@@ -25,7 +25,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
     Boolean TreadAlive = false;
     InterfaceAgenteForm myInterface;
     FormAgentePeca myForm = new FormAgentePeca(this);
-    int _local = 51;
+    int _local = 5;
     ArrayList<String> _servicesNeeded = new ArrayList<String>() {
         {
                 add("Storage4GB");
@@ -297,7 +297,8 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                     ACLMessage msg  = myAgent.receive(MessageTemplate.MatchConversationId("Local Peça"));
                     if(msg!=null){
                         if("Local Peça".equals(msg.getConversationId())){
-                            _local = GetLocalOnMessage(msg.getContent());                   
+                            _local = GetLocalOnMessage(msg.getContent()); 
+                            myForm.ReloadPosição(msg.getContent());
 
                         }
                     }                    

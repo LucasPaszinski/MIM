@@ -22,7 +22,7 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
     InterfaceAgenteForm myInterface;
     FormAgenteMaquina myForm = new FormAgenteMaquina(this);
     
-    int _location = 12;
+    int _location = 20;
   
     ArrayList<String> _machineServicesArray = new ArrayList<String>()
             {

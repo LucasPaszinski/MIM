@@ -229,19 +229,19 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm {
             
             if(local<25){
                 y = 05;
-                x = 450 - local*20;               
+                x = 455 - local*18;               
             }
             if(local>=25 && local<50){
                 x = 05;
-                y = 05 + (local-25)*20;               
+                y = 05 + (local-25)*18;               
             }
             if(local>=50 && local<75){
-                y = 435;
-                x = 05 + (local-50)*20;               
+                y = 455;
+                x = 05 + (local-50)*18;               
             }
             if(local>=75){
-                x = 435;
-                y = 450 - (local-75)*20;               
+                x = 455;
+                y = 455 - (local-75)*18;               
             }
             
             myForm.RealodLocationPeça(Agentes, x, y);

@@ -174,6 +174,9 @@ public class FormAgentePeca extends javax.swing.JFrame {
             
         
     }
+    public void ReloadPosição(String posição){
+        this.txtTarefas1.setText("Posição Atual: "+posição);
+    }
     private void btnRemoveTarefaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveTarefaActionPerformed
         // TODO add your handling code here:
         if(this.serviçosPeca.contains(this.txtTarefaDesejada.getText()))
@@ -206,7 +209,7 @@ public class FormAgentePeca extends javax.swing.JFrame {
         //</editor-fold>
         //</editor-fold>
         //</editor-fold>
-
+       
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {

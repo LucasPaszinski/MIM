@@ -24,10 +24,10 @@ public class FormAgenteEsteira extends javax.swing.JFrame {
        agentePeçaNome.setAlignmentX(0);
        agentePeçaNome.setAlignmentY(0);
        agentePeça.add(agentePeçaNome);
-       agentePeça.setVisible(true);
-       agentePeça.setVisible(true);
+       //agentePeça.setVisible(true);
+       //agentePeça.setVisible(true);
        agentePeça.setLocation(05, 05);
-       agentePeça.setSize(60, 40);
+       agentePeça.setSize(40, 40);
        agentePeça.setBackground(new Color((int)(Math.random()*0x1000000)));
        AgentesPeças.add(agentePeça);
        
@@ -60,23 +60,15 @@ public class FormAgenteEsteira extends javax.swing.JFrame {
        agentePeçaNome.setAlignmentX(0);
        agentePeçaNome.setAlignmentY(50);
        agentePeça.add(agentePeçaNome);
-       agentePeça.setVisible(true);
-       agentePeça.setVisible(true);
+       //agentePeça.setVisible(true);
+       //agentePeça.setVisible(true);
        agentePeça.setLocation(x, y);
        agentePeça.setSize(100, 100);
        agentePeça.setBackground(new Color((int)(Math.random()*0x1000000)));
        AgentesPeças.add(agentePeça);
        
     }
-    public void RealodLocationMaquina(String Agente, int x, int y){
-       for(JPanel jpanel: AgentesPeças){
-           if(jpanel.getName().equalsIgnoreCase(Agente)){
-   
-           }
-           
-       }
-    }
-    
+
     public void RemoveMaquina(String Agente){
         try{
        for(JPanel jpanel: AgentesPeças){
