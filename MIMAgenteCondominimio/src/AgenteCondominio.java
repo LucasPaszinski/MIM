@@ -1,5 +1,6 @@
 
 import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -13,7 +14,7 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
     InterfaceAgenteCondominio myInterface;
     FormAgenteCondominio myForm = new FormAgenteCondominio();
     //atributos
-    public String MensangemPeca;
+    public String MensagemPeca;
     public String MensagemMaquina;
     
     
@@ -39,11 +40,11 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
     }
     
     public String getMensangemPeca() {
-        return MensangemPeca;
+        return MensagemPeca;
     }
     
     public void setMensangemPeca(String MP) {
-        this.MensangemPeca = MP;
+        this.MensagemPeca = MP;
     }
     
     public String getMensagemMaquina() {
@@ -59,7 +60,7 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
         //RECEBE AS MENSAGENS DO AGENTE PEÇA
         DFAgentDescription dfd = new DFAgentDescription();
         ACLMessage mensagem = this.receive();//lê a mensage
-        MensangemPeca = "";
+        MensagemPeca = "";
         
     }
     public void ReceberMaquina(){
@@ -72,4 +73,17 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
              
          }
     }
+    
+    public class Mensageiro extends CyclicBehaviour {
+        
+        public Mensageiro(){
+        //CONTRUTOR
+        }
+        @Override
+        public void action() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        
+    }
+    
 }
