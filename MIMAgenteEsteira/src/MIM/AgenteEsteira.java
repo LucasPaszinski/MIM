@@ -43,7 +43,7 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm {
     
     public Boolean GetIsLocalPosted(){
             return _isLocalPosted;
-        }
+    }
     
     public void retirarPostagem(Agent ag){
         try { DFService.deregister(ag); }
