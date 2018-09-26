@@ -16,13 +16,14 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
     //atributos
     public String MensagemPeca;
     public String MensagemMaquina;
-    
+    Mensageiro Mensageiro = new Mensageiro();
     
     
     protected void Setup(){
         System.out.println("Oi, sou agente "+ getLocalName());
         myForm.setTitle("Agente " + getAID().getLocalName());
         postarServico(_MensageiroServicesArray); // posta que relealiza o serviço do tipo mensageiro e as atividade mensagem maquina e peça
+        addBehaviour(Mensageiro); // inicia o comportamento Mensageiro
         myForm.setVisible(true);//para ativar o form
     }
     protected void takeDown() {
@@ -36,6 +37,7 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
         doDelete();//chama o método takedown
     }
     
+   
         
     ArrayList<String> _MensageiroServicesArray = new ArrayList<String>()
     {
