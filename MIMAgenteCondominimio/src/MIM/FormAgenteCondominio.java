@@ -1,8 +1,7 @@
+package MIM;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import javafx.scene.layout.Border;
-
 
 public class FormAgenteCondominio extends javax.swing.JFrame {
     private final InterfaceAgenteCondominio myInterface;
@@ -18,8 +17,11 @@ public class FormAgenteCondominio extends javax.swing.JFrame {
     public void AddMessageMaquina(String Msg,String NomeAgente){
         javax.swing.JTextPane mensagem = new javax.swing.JTextPane();
         mensagem.setText(NomeAgente+": /n "+Msg+"./n "+Date.valueOf(LocalDate.MAX));
-        
         this.CampoPeca.add(mensagem); 
+        this.CampoMaquina.setRows(100);
+         this.CampoMaquina.add(mensagem);
+         this.CampoMaquina.setVisible(true);
+        mensagem.setVisible(true);
     }
     
 
