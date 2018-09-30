@@ -24,11 +24,12 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
     
     protected void setup(){
         System.out.println("Oi, sou agente "+ getLocalName());
+        myForm.setVisible(true);
         myForm.setTitle("Agente " + getAID().getLocalName());
-        myForm.AddMessageMaquina("Estou Vivo!", "Agente Teste");
+        myForm.AddMessage("Estou Vivo!", "Agente Teste");
         postarServico(_MensageiroServicesArray); // posta que relealiza o serviço do tipo mensageiro e as atividade mensagem maquina e peça
         addBehaviour(Mensageiro); // inicia o comportamento Mensageiro
-        myForm.setVisible(true);//para ativar o form
+        //para ativar o form
     }
     @Override
     protected void takeDown() {
@@ -136,10 +137,10 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
             if(msg!=null){
                 if(msg.getPerformative() == ACLMessage.INFORM){
                     if(msg.getConversationId().equalsIgnoreCase("Mensagem Maquina")){
-                        myForm.AddMessageMaquina(msg.getContent(), msg.getSender().getLocalName());
+                        myForm.AddMessage(msg.getContent(), msg.getSender().getLocalName());
                     }
                     if(msg.getConversationId().equalsIgnoreCase("Mensagem Peça")){
-                        myForm.AddMessagePeça(msg.getContent(), msg.getSender().getLocalName());
+                        myForm.AddMessage(msg.getContent(), msg.getSender().getLocalName());
                     }
                 }
             }             
