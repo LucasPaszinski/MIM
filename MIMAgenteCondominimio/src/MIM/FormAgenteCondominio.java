@@ -9,8 +9,14 @@ public class FormAgenteCondominio extends javax.swing.JFrame {
         this.myInterface = myNewInterface;
     }
     
-    public void AddMessage(String Msg,String NomeAgente){        
-       String msg = String.format("%s:\n\t%s.\n\t\t\t%tr\n%s",NomeAgente, Msg, java.time.LocalTime.now(),LimitMessage);
+    public void AddMessageMaquina(String Msg,String NomeAgente){        
+       String msg = String.format("%s:\n%s.\n\t\t%tr\n%s\n",NomeAgente, Msg, java.time.LocalTime.now(),LimitMessage);
+       this.Campo.append(msg);
+       
+    }
+    
+    public void AddMessagePeça(String Msg,String NomeAgente){        
+       String msg = String.format("\t%s:\n\t%s.\n\t\t\t%tr\n%s\n",NomeAgente, Msg, java.time.LocalTime.now(),LimitMessage);
        this.Campo.setText(msg);
     }
     
@@ -20,15 +26,12 @@ public class FormAgenteCondominio extends javax.swing.JFrame {
     private void initComponents() {
 
         BotaoSair = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        Campo = new javax.swing.JTextPane();
+        Campo = new java.awt.TextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Agente Condominio");
 
         BotaoSair.setText("Sair");
-
-        jScrollPane1.setViewportView(Campo);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -37,18 +40,16 @@ public class FormAgenteCondominio extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(BotaoSair)
-                        .addGap(0, 289, Short.MAX_VALUE)))
-                .addContainerGap())
+                    .addComponent(Campo, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(BotaoSair))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(BotaoSair)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+                .addComponent(Campo, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -92,7 +93,6 @@ public class FormAgenteCondominio extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BotaoSair;
-    private javax.swing.JTextPane Campo;
-    private javax.swing.JScrollPane jScrollPane1;
+    private java.awt.TextArea Campo;
     // End of variables declaration//GEN-END:variables
 }
