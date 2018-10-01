@@ -64,7 +64,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
         addBehaviour(new solicitadorServicos());//executa o comportamento que realizará as negociações
     }  
 
-    public ArrayList<AID> buscarAgentes(Agent agentePedindo, String nomeServico, String tipoServico) {
+public ArrayList<AID> buscarAgentes(Agent agentePedindo, String nomeServico, String tipoServico) {
         ArrayList<AID> aids = new ArrayList<>();
         DFAgentDescription agentDescription = new DFAgentDescription();
         ServiceDescription serviceDescription = new ServiceDescription();
@@ -101,17 +101,17 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
         int _locationVencedor;
         
         
-        public void SendMessageToFormAndMensageiro(String msg){
+       public void SendMessageToFormAndMensageiro(String msg){
             this.SendMessageToForm(msg);
             this.SendMessageToMensageiro(msg);
         }
         public void SendMessageToForm(String msg){
-            SendMessageToFormAndMensageiro(msg);
+         myForm.atualizarTexto(msg);
         }
         
         public void SendMessageToMensageiro(String msg){
-            ArrayList<AID> Mensageiros = buscarAgentes(myAgent, "Local Peça", "Local");
-            SendInform(Mensageiros, "Mensageiro", "Mensagem Maquina", msg);
+            ArrayList<AID> Mensageiros = buscarAgentes(myAgent, "Mensagem Peça", "Mensageiro");
+            SendInform(Mensageiros, "Mensageiro", "Mensagem Peça", msg);
         }
         
         public void SendInform(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content){
@@ -140,7 +140,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
             if (!AgentsThatDo.isEmpty()) {
                     ACLMessage cfpManufatura = new ACLMessage(messageType);
                     for (AID AgenteFazManufatura : AgentsThatDo) {
-                        SendMessageToFormAndMensageiro("Agente " + AgenteFazManufatura.getLocalName() + " faz");
+                        SendMessageToForm("Agente " + AgenteFazManufatura.getLocalName() + " faz");
                         cfpManufatura.addReceiver(AgenteFazManufatura);// carrega o Agentes que receberão o CFP
                     }
                     cfpManufatura.setContent(serviço + (serviço.equals("Local")? "":" ") + Content);//colocar a tarefa e o critério (preco / distancia)
@@ -149,7 +149,7 @@ public class AgentePeca extends Agent implements InterfaceAgenteForm {
                     cfpManufatura.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);//carrega o protocolo ContractNet
                     myAgent.send(cfpManufatura);// envia os CFP aos agentes
                             // Prepara para receber a resposta do participante [PROPOSE ou REFUSE]
-                    SendMessageToFormAndMensageiro("Enviando CFP...");
+                    SendMessageToForm("Enviando CFP...");
                     return 3;       
                 } 
                 else {

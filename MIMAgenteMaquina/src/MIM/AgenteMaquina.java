@@ -21,7 +21,7 @@ import javax.swing.JOptionPane;
 public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
     InterfaceAgenteForm myInterface;
     FormAgenteMaquina myForm = new FormAgenteMaquina(this);
-    
+    Agent Agente = this;
     int _location = 20;
   
     ArrayList<String> _machineServicesArray = new ArrayList<String>()
@@ -47,8 +47,10 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
     protected void setup() { 
         System.out.println("Oi, sou agente "+ getLocalName());
         myForm.setTitle("Agente " + getAID().getLocalName());
+        
         myForm.setVisible(true);//para ativar o form
         addBehaviour(Negociador);// Comportamento que negocia com agentes 
+        this.Negociador.SendMessageToMensageiro("Olá Sou" + this.getLocalName());
         ModbusConfigurationSetup();
         myForm.SetServiceArray(this._machineServicesArray);
         myForm.RealoadServiçes();
@@ -67,8 +69,8 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
     }
     
     public void ModbusConfigurationSetup(){
-        this._modbus.slaveId=2;
-        this._modbus.ParametersArduino("COM3"); 
+        this._modbus.slaveId=55;
+        this._modbus.ParametersArduino("COM4"); 
         this._modbus.StartUp();
         myForm.RealoadModbus(_modbus.RunCLP(),_modbus.DoneCLP(),_modbus.InformCLP(),_modbus.StatusCLP()); 
         
@@ -155,11 +157,11 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
             this.SendMessageToMensageiro(msg);
         }
         public void SendMessageToForm(String msg){
-        SendMessageToFormAndMensageiro(msg);
+         myForm.atualizarTexto(msg);
         }
         
         public void SendMessageToMensageiro(String msg){
-            ArrayList<AID> Mensageiros = buscarAgentes(myAgent, "Local Peça", "Local");
+            ArrayList<AID> Mensageiros = buscarAgentes(myAgent, "Mensagem Maquina", "Mensageiro");
             SendInform(Mensageiros, "Mensageiro", "Mensagem Maquina", msg);
         }
         
@@ -187,16 +189,16 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
         if (!AgentsThatDo.isEmpty()) {
                 ACLMessage cfpManufatura = new ACLMessage(messageType);
                 for (AID AgenteFazManufatura : AgentsThatDo) {
-                    SendMessageToFormAndMensageiro("Agente " + AgenteFazManufatura.getLocalName() + " faz");
+                    this.SendMessageToForm("Agente " + AgenteFazManufatura.getLocalName() + " faz");
                     cfpManufatura.addReceiver(AgenteFazManufatura);// carrega o Agentes que receberão o CFP
                 }
                 cfpManufatura.setContent(serviço + (serviço.equals("Local")? "":" ") + Content);//colocar a tarefa e o critério (preco / distancia)
                 cfpManufatura.setConversationId(ConversationID);//carrega o tipo de manufatura
-                cfpManufatura.setReplyWith("Local Peça");//habilida o recebimento de propostas
+                //cfpManufatura.setReplyWith("Local Peça");//habilida o recebimento de propostas
                 cfpManufatura.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);//carrega o protocolo ContractNet
                 myAgent.send(cfpManufatura);// envia os CFP aos agentes
                         // Prepara para receber a resposta do participante [PROPOSE ou REFUSE]
-                SendMessageToFormAndMensageiro("Enviando CFP...");
+                this.SendMessageToForm("Enviando CFP...");
         }
         }
         public ArrayList<AID> buscarAgentes(Agent agentePedindo, String nomeServico, String tipoServico) {
@@ -207,7 +209,9 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
         serviceDescription.setType(tipoServico);
         serviceDescription.setName(nomeServico);
         agentDescription.addServices(serviceDescription);
-
+        if(agentePedindo == null){
+        agentePedindo = Agente;
+        }
         try {
             for (DFAgentDescription agent : DFService.search(agentePedindo, agentDescription)) {
                 aids.add(agent.getName());
