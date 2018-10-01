@@ -162,7 +162,7 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
         
         public void SendMessageToMensageiro(String msg){
             ArrayList<AID> Mensageiros = buscarAgentes(myAgent, "Mensagem Maquina", "Mensageiro");
-            SendInform(Mensageiros, "Mensageiro", "Mensagem Maquina", msg);
+            if(Mensageiros != null )SendInform(Mensageiros, "Mensageiro", "Mensagem Maquina", msg);
         }
         
         public void SendInform(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content){
@@ -170,12 +170,12 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
         }
         public void SetLocation(int local){
             ArrayList<AID> AgentesEsteiras = buscarAgentes(myAgent, "Local Peça", "Local");
-            SendCFP(AgentesEsteiras, "Local", "Local Maquina", Integer.toString(local));      
+            if (AgentesEsteiras != null)SendCFP(AgentesEsteiras, "Local", "Local Maquina", Integer.toString(local));      
         } 
     
         public void RemoveLocation(){
             ArrayList<AID> AgentesEsteiras = buscarAgentes(myAgent, "Local Peça", "Local");
-            SendCancel(AgentesEsteiras, "Local", "Local Maquina");        
+            if (AgentesEsteiras != null)SendCancel(AgentesEsteiras, "Local", "Local Maquina");        
         }
         
         public void SendCFP(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content ){

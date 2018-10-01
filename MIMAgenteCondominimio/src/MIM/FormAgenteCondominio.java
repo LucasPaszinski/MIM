@@ -17,7 +17,7 @@ public class FormAgenteCondominio extends javax.swing.JFrame {
     
     public void AddMessagePeça(String Msg,String NomeAgente){        
        String msg = String.format("\t%s:\n\t%s.\n\t\t\t%tr\n%s\n",NomeAgente, Msg, java.time.LocalTime.now(),LimitMessage);
-       this.Campo.setText(msg);
+       this.Campo.append(msg);
     }
     
 
