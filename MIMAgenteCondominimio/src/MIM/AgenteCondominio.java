@@ -15,7 +15,7 @@ public class AgenteCondominio extends Agent implements InterfaceAgenteCondominio
     
     InterfaceAgenteCondominio myInterface;
     FormAgenteCondominio myForm = new FormAgenteCondominio(this);
-   
+   //pra nao bugar o bagulho
     //atributos
     String MensagemPeca;
     String MensagemMaquina;
