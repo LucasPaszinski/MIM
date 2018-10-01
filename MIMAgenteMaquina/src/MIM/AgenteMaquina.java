@@ -150,14 +150,30 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
     public class NegociadorMaquina extends Behaviour { 
         ACLMessage Termino;//para mandar o INFORM no final do processo
         
+        public void SendMessageToFormAndMensageiro(String msg){
+            this.SendMessageToForm(msg);
+            this.SendMessageToMensageiro(msg);
+        }
+        public void SendMessageToForm(String msg){
+        SendMessageToFormAndMensageiro(msg);
+        }
+        
+        public void SendMessageToMensageiro(String msg){
+            ArrayList<AID> Mensageiros = buscarAgentes(myAgent, "Local Peça", "Local");
+            SendInform(Mensageiros, "Mensageiro", "Mensagem Maquina", msg);
+        }
+        
+        public void SendInform(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content){
+            SendMessage(AgentsThatDo, serviço, ConversationID,  Content, ACLMessage.INFORM);
+        }
         public void SetLocation(int local){
-        ArrayList<AID> AgentesEsteiras = buscarAgentes(myAgent, "Local Peça", "Local");
-        SendCFP(AgentesEsteiras, "Local", "Local Maquina", Integer.toString(local));      
+            ArrayList<AID> AgentesEsteiras = buscarAgentes(myAgent, "Local Peça", "Local");
+            SendCFP(AgentesEsteiras, "Local", "Local Maquina", Integer.toString(local));      
         } 
     
         public void RemoveLocation(){
-        ArrayList<AID> AgentesEsteiras = buscarAgentes(myAgent, "Local Peça", "Local");
-        SendCancel(AgentesEsteiras, "Local", "Local Maquina");        
+            ArrayList<AID> AgentesEsteiras = buscarAgentes(myAgent, "Local Peça", "Local");
+            SendCancel(AgentesEsteiras, "Local", "Local Maquina");        
         }
         
         public void SendCFP(ArrayList<AID> AgentsThatDo,String serviço,String ConversationID, String Content ){
@@ -171,7 +187,7 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
         if (!AgentsThatDo.isEmpty()) {
                 ACLMessage cfpManufatura = new ACLMessage(messageType);
                 for (AID AgenteFazManufatura : AgentsThatDo) {
-                    myForm.atualizarTexto("Agente " + AgenteFazManufatura.getLocalName() + " faz");
+                    SendMessageToFormAndMensageiro("Agente " + AgenteFazManufatura.getLocalName() + " faz");
                     cfpManufatura.addReceiver(AgenteFazManufatura);// carrega o Agentes que receberão o CFP
                 }
                 cfpManufatura.setContent(serviço + (serviço.equals("Local")? "":" ") + Content);//colocar a tarefa e o critério (preco / distancia)
@@ -180,7 +196,7 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
                 cfpManufatura.setProtocol(FIPANames.InteractionProtocol.FIPA_CONTRACT_NET);//carrega o protocolo ContractNet
                 myAgent.send(cfpManufatura);// envia os CFP aos agentes
                         // Prepara para receber a resposta do participante [PROPOSE ou REFUSE]
-                myForm.atualizarTexto("Enviando CFP...");
+                SendMessageToFormAndMensageiro("Enviando CFP...");
         }
         }
         public ArrayList<AID> buscarAgentes(Agent agentePedindo, String nomeServico, String tipoServico) {
@@ -219,12 +235,12 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
             }
             if (mensagem != null) {                                                             
                 if (mensagem.getPerformative() == ACLMessage.CFP) {                
-                    myForm.atualizarTexto(""+mensagem.getSender().getLocalName()+" -> "+mensagem.getContent());                   
+                    SendMessageToFormAndMensageiro(""+mensagem.getSender().getLocalName()+" -> "+mensagem.getContent());                   
                     if(!getEstadoMaquina()){//Monitora o estado da máquina => TRUE=livre, FALSE=ocupada
                         ACLMessage Ocupada = mensagem.createReply();
                         Ocupada.setPerformative(ACLMessage.REFUSE);
                         Ocupada.setContent("Maquina Ocupada");
-                        myForm.atualizarTexto("Não Posso"); 
+                        SendMessageToFormAndMensageiro("Não Posso"); 
                         myAgent.send(Ocupada);
                     }else{
                         StringTokenizer M = new StringTokenizer(mensagem.getContent());
@@ -235,25 +251,25 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
                         PropostaMaquina.setContent(""+obterCusto(CriterioM));
                         PropostaMaquina.addUserDefinedParameter("Location", Integer.toString(_location));
                         myAgent.send(PropostaMaquina);
-                          myForm.atualizarTexto("Posso com custo de "+PropostaMaquina.getContent());
+                          SendMessageToFormAndMensageiro("Posso com custo de "+PropostaMaquina.getContent());
                         //setEstadoMaquina(false);//para ocupar a máquina e não atender outro pedido
                     }
                 }               
                 if (mensagem.getPerformative() == ACLMessage.REJECT_PROPOSAL && getEstadoMaquina()) {//proposta foi rejeitada
-                    myForm.atualizarTexto("Proposta Recusada");
+                    SendMessageToFormAndMensageiro("Proposta Recusada");
                     setEstadoMaquina(true);//para liberar a máquina   
                 }
                 if (mensagem.getPerformative() == ACLMessage.ACCEPT_PROPOSAL && getEstadoMaquina()) {//proposta foi aceita                    
-                    myForm.atualizarTexto("Proposta foi Aceita");
+                    SendMessageToFormAndMensageiro("Proposta foi Aceita");
                     setEstadoMaquina(false);//para manter a máquina ocupada 
                     myAgent.send(mensagem);
                 }
                 if (mensagem.getPerformative() == ACLMessage.REQUEST) {
-                    myForm.atualizarTexto("Peça está aqui, é hora de pergar ela!");
+                    SendMessageToFormAndMensageiro("Peça está aqui, é hora de pergar ela!");
                     String informacao = mensagem.getContent();
                     setEstadoMaquina(false);//para manter a máquina ocupada 
-                      myForm.atualizarTexto("Requisitado por "+mensagem.getSender().getLocalName());
-                      myForm.atualizarTexto("Servico = "+informacao);
+                      SendMessageToFormAndMensageiro("Requisitado por "+mensagem.getSender().getLocalName());
+                      SendMessageToFormAndMensageiro("Servico = "+informacao);
                     Termino = mensagem.createReply();//para responder o INFORM no final
                     //Executa a máquina
                     Thread Maquina = new ExecutaMaquina(informacao);// executa a thread que fara a tarefa propriamente                    
@@ -263,12 +279,12 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
             }
             else if(getFimExecucaoMaquina()){
                 setFimExecucaoMaquina(false); //para resetar a flag de FimExecucaoMaquina               
-                myForm.atualizarTexto("Terminou a atividade");
+                SendMessageToFormAndMensageiro("Terminou a atividade");
                 Termino.setPerformative(ACLMessage.INFORM);
                 Termino.setContent(getRespostaMaquina());//agrega a resposta da máquina
                 myAgent.send(Termino);
                 //myForm.limparTexto();//limpar a caixa de mensagens
-                myForm.atualizarTexto("Máquina Disponível...");
+                SendMessageToFormAndMensageiro("Máquina Disponível...");
                 setEstadoMaquina(true);//maquina liberada = true; máquina ocupada = false;
             }
             //block(500);//bloqueia a varredura por 500ms ou quando chegar uma nova mensagem
