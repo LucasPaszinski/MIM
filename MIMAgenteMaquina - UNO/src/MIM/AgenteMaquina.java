@@ -22,7 +22,7 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
     InterfaceAgenteForm myInterface;
     FormAgenteMaquina myForm = new FormAgenteMaquina(this);
     Agent Agente = this;
-    int _location = 45;
+    int _location = 20;
   
     ArrayList<String> _machineServicesArray = new ArrayList<String>()
             {
@@ -69,8 +69,8 @@ public class AgenteMaquina extends Agent implements InterfaceAgenteForm {
     }
     
     public void ModbusConfigurationSetup(){
-        this._modbus.slaveId=2;
-        this._modbus.ParametersArduino("COM3"); 
+        this._modbus.slaveId=55;
+        this._modbus.ParametersArduino("COM4"); 
         this._modbus.StartUp();
         myForm.RealoadModbus(_modbus.RunCLP(),_modbus.DoneCLP(),_modbus.InformCLP(),_modbus.StatusCLP()); 
         
