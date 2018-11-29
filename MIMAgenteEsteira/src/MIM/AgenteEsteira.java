@@ -163,7 +163,7 @@ public class AgenteEsteira extends Agent implements InterfaceAgenteForm {
                 }
             }             
             
-            if(new Date().getTime() - TempoCiclo > 2000){
+            if(new Date().getTime() - TempoCiclo > 200){
                 TempoCiclo = new Date().getTime();
                 if(!_agentesPeça.isEmpty()){
                     
